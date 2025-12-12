@@ -1,1 +1,1 @@
-web: gunicorn config.wsgi
+web: gunicorn crm_project.wsgi
