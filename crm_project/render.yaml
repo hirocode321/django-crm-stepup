@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: django-crm-stepup
+    runtime: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+    startCommand: |
+      gunicorn crm_project.wsgi
+    envVars:
+      - key: SECRET_KEY
+        sync: false
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_HOSTS
+        value: django-crm-stepup-pdqy.onrender.com
+    autoDeploy: true
