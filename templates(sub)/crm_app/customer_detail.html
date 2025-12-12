@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ customer.company_name }} 詳細</title>
+</head>
+<body>
+    <body>
+    <h1>{{ customer.company_name }}</h1>
+    <p>
+        <a href="{% url 'customer_update' customer.pk %}">[編集する]</a>
+        <a href="{% url 'customer_delete' customer.pk %}" style="color: red;">[削除する]</a>
+    </p>
+    <p><strong>#ID:</strong> {{ customer.id }}</p>
+    <p><strong>担当者名:</strong> {{ customer.contact_name }}</p>
+    <p><strong>Email:</strong> {{ customer.email }}</p>
+    <p><strong>電話番号:</strong> {{ customer.phone|default:"-" }}</p>
+    <p><strong>担当営業:</strong> {{ customer.user|default:"未割り当て" }}</p>
+
+    <p><strong>タグ:</strong>
+        {% for tag in customer.tags.all %}
+            <span style="background-color:#eee; padding:2px;">{{ tag.name }}</span>
+        {% empty %}
+            なし
+        {% endfor %}
+    </p>
+
+    <p><strong>作成日時:</strong> {{ customer.created_at }}</p>
+
+    <hr>
+
+    <h3>商談履歴</h3>
+    <ul>
+        {% for activity in customer.activity_set.all %}
+            <li>
+                {{ activity.activity_date }}
+                [{{ activity.get_status_display }}] <br>
+                {{ activity.note|linebreaksbr }}
+            </li>
+        {% empty %}
+            <li>商談履歴はありません。</li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+
+    <a href="{% url 'customer_list' %}">一覧に戻る</a>
+</body>
+</html>

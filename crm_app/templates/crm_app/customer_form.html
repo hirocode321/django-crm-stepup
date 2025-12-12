@@ -1,0 +1,121 @@
+{% extends "crm_app/base.html" %}
+
+{% block title %}
+    {% if object %}編集{% else %}新規登録{% endif %}
+{% endblock %}
+
+{% block content %}
+<h1>
+    {% if object %}
+        {{ object.company_name }} の編集
+    {% else %}
+        顧客の新規登録
+    {% endif %}
+</h1>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="id_company_name" class="form-label">会社名 <span class="text-danger">*</span></label>
+                {{ form.company_name }}
+                {% if form.company_name.errors %}
+                    <div class="invalid-feedback d-block">{{ form.company_name.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="id_contact_name" class="form-label">担当者名 <span class="text-danger">*</span></label>
+                {{ form.contact_name }}
+                {% if form.contact_name.errors %}
+                    <div class="invalid-feedback d-block">{{ form.contact_name.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="id_email" class="form-label">メールアドレス <span class="text-danger">*</span></label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="invalid-feedback d-block">{{ form.email.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="id_phone" class="form-label">電話番号</label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                    <div class="invalid-feedback d-block">{{ form.phone.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">タグ</label>
+                <div class="border rounded p-4 bg-light">
+                    <div id="tags-container">
+                        {{ form.tags }}
+                    </div>
+                    {% if form.tags.errors %}
+                        <div class="invalid-feedback d-block">{{ form.tags.errors }}</div>
+                    {% endif %}
+                </div>
+                <small class="form-text text-muted d-block mt-2">複数選択可。顧客の分類に使用します。</small>
+            </div>
+
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
+                <button type="submit" class="btn btn-success">保存</button>
+                <a href="{% url 'customer_list' %}" class="btn btn-outline-secondary">キャンセル</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // フォーム要素への Bootstrap クラス適用
+    document.querySelectorAll('form input[type="text"], form input[type="email"], form input[type="tel"], form select, form textarea').forEach(el => {
+        if (!el.classList.contains('form-control') && !el.classList.contains('form-select')) {
+            el.classList.add('form-control');
+        }
+    });
+
+    // CheckboxSelectMultiple のカスタムスタイル - より堅牢な実装
+    const tagsContainer = document.getElementById('tags-container');
+    if (tagsContainer) {
+        // すべてのチェックボックスを取得
+        const checkboxes = tagsContainer.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach((checkbox) => {
+            // チェックボックスにクラスを追加
+            checkbox.classList.add('form-check-input');
+            
+            // チェックボックスの親を取得または作成
+            let checkDiv = checkbox.parentElement;
+            
+            // 既に form-check で囲まれていなければ囲む
+            if (!checkDiv.classList.contains('form-check')) {
+                const newDiv = document.createElement('div');
+                newDiv.className = 'form-check';
+                checkbox.parentNode.insertBefore(newDiv, checkbox);
+                newDiv.appendChild(checkbox);
+                checkDiv = newDiv;
+            }
+            
+            // ラベルを取得
+            let label = checkDiv.querySelector('label');
+            if (!label) {
+                label = document.querySelector(`label[for="${checkbox.id}"]`);
+            }
+            
+            // ラベルにクラスを追加
+            if (label) {
+                label.classList.add('form-check-label');
+                // ラベルをチェックボックスの後に配置
+                if (label.parentNode !== checkDiv) {
+                    checkDiv.appendChild(label);
+                }
+            }
+        });
+    }
+</script>
+
+{% endblock %}

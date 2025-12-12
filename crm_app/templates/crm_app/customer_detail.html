@@ -1,0 +1,160 @@
+{% extends "crm_app/base.html" %}
+
+{% block title %}{{ customer.company_name }} 詳細{% endblock %}
+
+{% block content %}
+
+<!-- ヘッダーセクション -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>{{ customer.company_name }}</h2>
+        <p class="text-muted mb-0">
+            <small>ID: {{ customer.id }} | 担当者: {{ customer.user|default:"未割り当て" }}</small>
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'customer_update' customer.pk %}" class="btn btn-warning btn-sm">
+            <i class="bi bi-pencil"></i> 編集
+        </a>
+        <a href="{% url 'customer_delete' customer.pk %}" class="btn btn-danger btn-sm">
+            <i class="bi bi-trash"></i> 削除
+        </a>
+    </div>
+</div>
+
+<!-- 顧客情報カード -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">顧客情報</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>担当者名:</strong> {{ customer.contact_name }}</p>
+                <p><strong>メールアドレス:</strong> <a href="mailto:{{ customer.email }}">{{ customer.email }}</a></p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>電話番号:</strong> {{ customer.phone|default:"-" }}</p>
+                <p><strong>作成日:</strong> {{ customer.created_at|date:"Y年m月d日" }}</p>
+            </div>
+        </div>
+        
+        {% if customer.tags.all %}
+        <div class="mt-3">
+            <strong>タグ:</strong><br>
+            {% for tag in customer.tags.all %}
+                <span class="badge bg-info">{{ tag.name }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<h3 class="mt-4">商談履歴</h3>
+
+<div class="card mb-3 bg-light">
+    <div class="card-body">
+        <h6 class="card-title">商談をクイック追加</h6>
+
+        <form id="activity-form">
+            {% csrf_token %}
+            <input type="hidden" name="customer_id" value="{{ customer.id }}">
+
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <input type="date" name="activity_date" class="form-control" required>
+                </div>
+
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="APPO">アポ</option>
+                        <option value="MEETING">商談中</option>
+                        <option value="PROPOSAL">提案中</option>
+                        <option value="WON">受注</option>
+                        <option value="LOST">失注</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <input type="text" name="note" class="form-control" placeholder="メモを入力" required>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">追加</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <ul class="list-group list-group-flush" id="activity-list">
+            {% for activity in customer.activity_set.all|dictsortreversed:"activity_date" %}
+                <li class="list-group-item">
+                    <strong>{{ activity.activity_date }}</strong>
+                    <span class="badge bg-secondary ms-2">{{ activity.get_status_display }}</span>
+                    <br>
+                    {{ activity.note | linebreaksbr }}
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted" id="no-activity-msg">
+                    商談履歴はまだありません。
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+document.getElementById('activity-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // 画面遷移を防ぐ
+
+    const form = this;
+    const formData = new FormData(form);
+    const url = "{% url 'ajax_add_activity' %}";
+
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        // 「ありません」メッセージがあれば削除
+        const noMsg = document.getElementById('no-activity-msg');
+        if (noMsg) noMsg.remove();
+
+        // 新しい要素を作成
+        const list = document.getElementById('activity-list');
+        const newItem = document.createElement('li');
+        newItem.className = "list-group-item bg-info bg-opacity-10";
+
+        newItem.innerHTML = `
+            <strong>${data.activity_date}</strong>
+            <span class="badge bg-secondary ms-2">${data.status}</span>
+            <br>
+            ${data.note}
+        `;
+
+        // 先頭に追加
+        list.prepend(newItem);
+
+        // フォームをリセット
+        form.reset();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('エラーが発生しました。');
+    });
+});
+</script>
+
+{% endblock %}

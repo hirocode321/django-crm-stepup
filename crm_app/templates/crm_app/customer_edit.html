@@ -1,0 +1,218 @@
+{% extends "crm_app/base.html" %}
+
+{% block title %}{{ object.company_name }} の編集{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- ページタイトル -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1>顧客情報の編集</h1>
+                    <p class="text-muted">
+                        <small>{{ object.company_name }} (ID: {{ object.id }})</small>
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'customer_detail' object.pk %}" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> キャンセル
+                    </a>
+                </div>
+            </div>
+
+            <!-- 編集フォーム -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">基本情報</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation">
+                        {% csrf_token %}
+
+                        <!-- 会社名 -->
+                        <div class="mb-4">
+                            <label for="id_company_name" class="form-label fw-bold">
+                                会社名 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.company_name }}
+                            {% if form.company_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    <strong>エラー:</strong> {{ form.company_name.errors|first }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">例: ○○株式会社</small>
+                        </div>
+
+                        <!-- 担当者名 -->
+                        <div class="mb-4">
+                            <label for="id_contact_name" class="form-label fw-bold">
+                                担当者名 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.contact_name }}
+                            {% if form.contact_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    <strong>エラー:</strong> {{ form.contact_name.errors|first }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">例: 山田太郎</small>
+                        </div>
+
+                        <!-- メールアドレス -->
+                        <div class="mb-4">
+                            <label for="id_email" class="form-label fw-bold">
+                                メールアドレス <span class="text-danger">*</span>
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    <strong>エラー:</strong> {{ form.email.errors|first }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">例: yamada@example.com</small>
+                        </div>
+
+                        <!-- 電話番号 -->
+                        <div class="mb-4">
+                            <label for="id_phone" class="form-label fw-bold">電話番号</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="invalid-feedback d-block">
+                                    <strong>エラー:</strong> {{ form.phone.errors|first }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">例: 090-0000-0000 (省略可能)</small>
+                        </div>
+
+                        <hr>
+
+                        <!-- タグ -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">タグ</label>
+                            <div class="border rounded p-4 bg-light">
+                                <div id="tags-container">
+                                    {{ form.tags }}
+                                </div>
+                                {% if form.tags.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <strong>エラー:</strong> {{ form.tags.errors|first }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <small class="form-text text-muted d-block mt-2">複数選択可。顧客の分類や特性に使用します。</small>
+                        </div>
+
+                        <!-- フォーム全体のエラー -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger mt-3" role="alert">
+                                <strong>エラーが発生しました:</strong>
+                                {{ form.non_field_errors|first }}
+                            </div>
+                        {% endif %}
+
+                        <!-- ボタン -->
+                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-between mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> 更新
+                            </button>
+                            <a href="{% url 'customer_detail' object.pk %}" class="btn btn-outline-secondary btn-lg">
+                                キャンセル
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 危険ゾーン -->
+            <div class="card mt-4 border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">危険ゾーン</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">この操作は取り消すことができません。削除する前に十分にご確認ください。</p>
+                    <a href="{% url 'customer_delete' object.pk %}" class="btn btn-outline-danger">
+                        <i class="bi bi-trash"></i> この顧客を削除
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側パネル：変更履歴 -->
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">情報</h5>
+                </div>
+                <div class="card-body small">
+                    <p class="mb-2">
+                        <strong>作成日:</strong><br>
+                        <span class="text-muted">{{ object.created_at|date:"Y年m月d日 H:i" }}</span>
+                    </p>
+                    <p class="mb-2">
+                        <strong>最終更新:</strong><br>
+                        <span class="text-muted">{{ object.updated_at|date:"Y年m月d日 H:i" }}</span>
+                    </p>
+                    <p class="mb-2">
+                        <strong>担当営業:</strong><br>
+                        <span class="text-muted">{{ object.user|default:"未割り当て" }}</span>
+                    </p>
+                    <hr>
+                    <p class="mb-0">
+                        <a href="{% url 'customer_detail' object.pk %}" class="btn btn-sm btn-outline-primary w-100">
+                            詳細ページへ
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // フォーム要素への Bootstrap クラス適用
+    document.querySelectorAll('form input[type="text"], form input[type="email"], form input[type="tel"], form select, form textarea').forEach(el => {
+        if (!el.classList.contains('form-control') && !el.classList.contains('form-select')) {
+            el.classList.add('form-control');
+        }
+    });
+
+    // CheckboxSelectMultiple のカスタムスタイル - より堅牢な実装
+    const tagsContainer = document.getElementById('tags-container');
+    if (tagsContainer) {
+        // すべてのチェックボックスを取得
+        const checkboxes = tagsContainer.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach((checkbox) => {
+            // チェックボックスにクラスを追加
+            checkbox.classList.add('form-check-input');
+            
+            // チェックボックスの親を取得または作成
+            let checkDiv = checkbox.parentElement;
+            
+            // 既に form-check で囲まれていなければ囲む
+            if (!checkDiv.classList.contains('form-check')) {
+                const newDiv = document.createElement('div');
+                newDiv.className = 'form-check';
+                checkbox.parentNode.insertBefore(newDiv, checkbox);
+                newDiv.appendChild(checkbox);
+                checkDiv = newDiv;
+            }
+            
+            // ラベルを取得
+            let label = checkDiv.querySelector('label');
+            if (!label) {
+                label = document.querySelector(`label[for="${checkbox.id}"]`);
+            }
+            
+            // ラベルにクラスを追加
+            if (label) {
+                label.classList.add('form-check-label');
+                // ラベルをチェックボックスの後に配置
+                if (label.parentNode !== checkDiv) {
+                    checkDiv.appendChild(label);
+                }
+            }
+        });
+    }
+</script>
+
+{% endblock %}
