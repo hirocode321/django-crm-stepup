@@ -136,11 +136,6 @@ STATICFILES_DIRS = [
 # 静的ファイルの圧縮とキャッシュの設定（WhiteNoise）
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# ?????
-MIDDLEWARE.insert(
-    1, 'whitenoise.middleware.WhiteNoiseMiddleware'
-)
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
